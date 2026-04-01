@@ -1,0 +1,13 @@
+pandas
+numpy
+scikit-learn
+joblib
+tabulate
+matplotlib
+seaborn
+imbalanced-learn
+streamlit
+plotly
+google-api-python-client
+google-auth-oauthlib
+google-auth-httplib2

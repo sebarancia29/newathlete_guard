@@ -1,0 +1,334 @@
+﻿
++======================================================================+
+|   Athlete Injury Prediction & Recovery Recommendation System         |
+|   Powered by Machine Learning | scikit-learn                         |
++======================================================================+
+
+
+============================================================
+  STEP: 1 / 7 -- Dataset Generation
+============================================================
+[1/2] Generating sports injury dataset...
+      Saved ΓåÆ C:\Users\sebar\OneDrive\Documents\claimsense\ml_project\data\sports_injury_dataset.csv  (500 rows)
+[2/2] Generating Fitbit fitness dataset...
+      Saved ΓåÆ C:\Users\sebar\OneDrive\Documents\claimsense\ml_project\data\fitbit_fitness_dataset.csv  (500 rows)
+
+Dataset generation complete.
+
+============================================================
+  STEP: 2 / 7 -- Data Preprocessing
+============================================================
+
+==================================================
+  DATA PREPROCESSING
+==================================================
+[Preprocessing] Loaded sports injury dataset:  (500, 7)
+[Preprocessing] Loaded Fitbit fitness dataset: (500, 4)
+
+ΓåÆ Handling missing values (sports injury)...
+  [Missing] Filled 'training_hours' NaNs with median=22.80
+  [Missing] Filled 'fatigue_score' NaNs with median=5.47
+  [Missing] Filled 'recovery_time' NaNs with median=3.90
+
+ΓåÆ Handling missing values (Fitbit)...
+  [Missing] Filled 'sleep_duration' NaNs with median=7.00
+  [Missing] Filled 'heart_rate' NaNs with median=71.00
+
+ΓåÆ Merging datasets...
+[Preprocessing] Merged dataset shape: (500, 11)
+
+ΓåÆ Encoding categorical variables...
+  [Encode]  'training_intensity' ΓåÆ ['High', 'Low', 'Medium']
+  [Encode]  'activity_level' ΓåÆ ['Active', 'Lightly Active', 'Sedentary', 'Very Active']
+
+[Preprocessing] Done. Final shape: (500, 11)
+
+============================================================
+  STEP: 3 / 7 -- Feature Engineering
+============================================================
+
+==================================================
+  FEATURE ENGINEERING
+==================================================
+  [Feature Eng] workload_index  ΓåÆ min=7.3, max=557.2, mean=161.5
+  [Feature Eng] fatigue_index   ΓåÆ min=0.14, max=5.18, mean=1.40
+  [Feature Eng] recovery_score  ΓåÆ min=0.0333, max=1.1094, mean=0.3773
+  [Feature Eng] Severity distribution: {'moderate': 197, 'mild': 189, 'severe': 114}
+
+[Feature Eng] Final shape after engineering: (500, 15)
+
+============================================================
+  STEP: 4 / 7 -- Injury Prediction Model  [SMOTE + CV]
+============================================================
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  INJURY PREDICTION MODEL  [with class balancing + CV]
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  Class distribution: No Injury=398, Injury=102
+  Imbalance ratio   : 3.9:1
+  Train: 400 samples | Test: 100 samples
+  After SMOTE ΓåÆ Train: 636 samples (No Injury=318, Injury=318)
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  1. Logistic Regression  [class_weight='balanced']
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    Accuracy : 0.6000 (60.00%) | AUC: 0.5250
+    Classification Report (Logistic Regression):
+                    precision    recall  f1-score   support
+      
+         No Injury       0.81      0.65      0.72        80
+            Injury       0.22      0.40      0.29        20
+      
+          accuracy                           0.60       100
+         macro avg       0.52      0.53      0.50       100
+      weighted avg       0.69      0.60      0.63       100
+    Confusion Matrix:
+      [52 28]  <- No Injury row
+      [12  8]  <- Injury row
+
+  Γû║ 5-Fold Stratified Cross-Validation ΓÇö Logistic Regression
+    Metric              Mean       Std
+    -----------------------------------
+    Accuracy          0.5500    0.0335
+    F1-Score          0.2354    0.0298
+    Recall            0.3433    0.0685
+    Precision         0.1801    0.0171
+    ROC-AUC           0.4917    0.0305
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  2. Random Forest  [class_weight='balanced' + SMOTE]
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    Accuracy : 0.7200 (72.00%) | AUC: 0.5625
+    Classification Report (Random Forest):
+                    precision    recall  f1-score   support
+      
+         No Injury       0.82      0.82      0.82        80
+            Injury       0.30      0.30      0.30        20
+      
+          accuracy                           0.72       100
+         macro avg       0.56      0.56      0.56       100
+      weighted avg       0.72      0.72      0.72       100
+    Confusion Matrix:
+      [66 14]  <- No Injury row
+      [14  6]  <- Injury row
+
+  Γû║ 5-Fold Stratified Cross-Validation ΓÇö Random Forest
+    Metric              Mean       Std
+    -----------------------------------
+    Accuracy          0.6440    0.0413
+    F1-Score          0.2037    0.0796
+    Recall            0.2252    0.0898
+    Precision         0.1876    0.0739
+    ROC-AUC           0.4813    0.0467
+
+  Γû║ Top 5 Feature Importances (Random Forest):
+    training_hours         0.1331  ######
+    steps_per_day          0.1159  #####
+    fatigue_score          0.1045  #####
+    sleep_duration         0.0910  ####
+    recovery_score         0.0860  ####
+
+  [OK] Best model (Random Forest + SMOTE) saved -> C:\Users\sebar\OneDrive\Documents\claimsense\ml_project\models\injury_model.pkl
+
+============================================================
+  STEP: 5 / 7 -- Injury Severity Model
+============================================================
+
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  INJURY SEVERITY MODEL
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  Train: 400 samples | Test: 100 samples
+  Class distribution (test): {0: np.int64(38), 1: np.int64(39), 2: np.int64(23)}
+
+  Γû║ Random Forest Accuracy: 0.9600 (96.00%)
+
+  Classification Report:
+                  precision    recall  f1-score   support
+    
+            mild       0.97      0.97      0.97        38
+        moderate       0.95      0.95      0.95        39
+          severe       0.96      0.96      0.96        23
+    
+        accuracy                           0.96       100
+       macro avg       0.96      0.96      0.96       100
+    weighted avg       0.96      0.96      0.96       100
+  Confusion Matrix (rows=actual, cols=predicted):
+              mild  moderate    severe
+  mild            37         1         0
+  moderate         1        37         1
+  severe           0         1        22
+
+  Γû║ Top 5 Feature Importances:
+    fatigue_index          0.3923  ###################
+    recovery_score         0.1385  ######
+    recovery_time          0.1261  ######
+    fatigue_score          0.1115  #####
+    workload_index         0.0905  ####
+
+  Γ£ö Severity model saved ΓåÆ C:\Users\sebar\OneDrive\Documents\claimsense\ml_project\models\severity_model.pkl
+
+============================================================
+  STEP: 6 / 7 -- Recovery Recommendations
+============================================================
+
+============================================================
+  RECOVERY RECOMMENDATIONS
+============================================================
+
+[1] ATH0001
+    Status    : ΓÜá Injury Risk Detected ΓÇö Severity: Mild
+    Rest Days : 1 day
+    Avoid     : Overloading the affected muscle group; Skipping warm-up routines
+    Tips      :
+      ΓÇó Light aerobic activity (walking, cycling) is encouraged.
+      ΓÇó Stretch affected areas gently after warm-up.
+      ΓÇó Monitor fatigue score over the next 48 hours.
+
+[2] ATH0002
+    Status    : Γ£à Low Injury Risk
+    Rest Days : 0 (active recovery recommended)
+    Tips      :
+      ΓÇó Γ£à No injury risk detected ΓÇö maintain current training load.
+      ΓÇó Continue monitoring fatigue and recovery metrics weekly.
+      ΓÇó Include 1 full rest day per week as a preventive measure.
+
+[3] ATH0003
+    Status    : Γ£à Low Injury Risk
+    Rest Days : 0 (active recovery recommended)
+    Tips      :
+      ΓÇó Γ£à No injury risk detected ΓÇö maintain current training load.
+      ΓÇó Continue monitoring fatigue and recovery metrics weekly.
+      ΓÇó Include 1 full rest day per week as a preventive measure.
+
+[4] ATH0004
+    Status    : Γ£à Low Injury Risk
+    Rest Days : 0 (active recovery recommended)
+    Tips      :
+      ΓÇó Γ£à No injury risk detected ΓÇö maintain current training load.
+      ΓÇó Continue monitoring fatigue and recovery metrics weekly.
+      ΓÇó Include 1 full rest day per week as a preventive measure.
+
+[5] ATH0005
+    Status    : Γ£à Low Injury Risk
+    Rest Days : 0 (active recovery recommended)
+    Tips      :
+      ΓÇó Γ£à No injury risk detected ΓÇö maintain current training load.
+      ΓÇó Continue monitoring fatigue and recovery metrics weekly.
+      ΓÇó Include 1 full rest day per week as a preventive measure.
+
+[6] ATH0006
+    Status    : Γ£à Low Injury Risk
+    Rest Days : 0 (active recovery recommended)
+    Tips      :
+      ΓÇó Γ£à No injury risk detected ΓÇö maintain current training load.
+      ΓÇó Continue monitoring fatigue and recovery metrics weekly.
+      ΓÇó Include 1 full rest day per week as a preventive measure.
+
+[7] ATH0007
+    Status    : Γ£à Low Injury Risk
+    Rest Days : 0 (active recovery recommended)
+    Tips      :
+      ΓÇó Γ£à No injury risk detected ΓÇö maintain current training load.
+      ΓÇó Continue monitoring fatigue and recovery metrics weekly.
+      ΓÇó Include 1 full rest day per week as a preventive measure.
+
+[8] ATH0008
+    Status    : Γ£à Low Injury Risk
+    Rest Days : 0 (active recovery recommended)
+    Tips      :
+      ΓÇó Γ£à No injury risk detected ΓÇö maintain current training load.
+      ΓÇó Continue monitoring fatigue and recovery metrics weekly.
+      ΓÇó Include 1 full rest day per week as a preventive measure.
+
+[9] ATH0009
+    Status    : Γ£à Low Injury Risk
+    Rest Days : 0 (active recovery recommended)
+    Tips      :
+      ΓÇó Γ£à No injury risk detected ΓÇö maintain current training load.
+      ΓÇó Continue monitoring fatigue and recovery metrics weekly.
+      ΓÇó Include 1 full rest day per week as a preventive measure.
+
+[10] ATH0010
+    Status    : Γ£à Low Injury Risk
+    Rest Days : 0 (active recovery recommended)
+    Tips      :
+      ΓÇó Γ£à No injury risk detected ΓÇö maintain current training load.
+      ΓÇó Continue monitoring fatigue and recovery metrics weekly.
+      ΓÇó Include 1 full rest day per week as a preventive measure.
+
+============================================================
+
+============================================================
+  STEP: 7 / 7 -- Visualizations
+============================================================
+
+=======================================================
+  GENERATING VISUALIZATIONS
+=======================================================
+  [Saved] C:\Users\sebar\OneDrive\Documents\claimsense\ml_project\plots\injury_feature_importance.png
+  [Saved] C:\Users\sebar\OneDrive\Documents\claimsense\ml_project\plots\injury_confusion_matrix.png
+  [Saved] C:\Users\sebar\OneDrive\Documents\claimsense\ml_project\plots\severity_feature_importance.png
+  [Saved] C:\Users\sebar\OneDrive\Documents\claimsense\ml_project\plots\severity_confusion_matrix.png
+  [Saved] C:\Users\sebar\OneDrive\Documents\claimsense\ml_project\plots\severity_distribution.png
+  [Saved] C:\Users\sebar\OneDrive\Documents\claimsense\ml_project\plots\fatigue_vs_recovery_scatter.png
+  [Saved] C:\Users\sebar\OneDrive\Documents\claimsense\ml_project\plots\injury_class_distribution.png
+
+  7 plots saved to ΓåÆ C:\Users\sebar\OneDrive\Documents\claimsense\ml_project\plots
+
+============================================================
+  ATHLETE SUMMARY TABLE (first 15 athletes)
+============================================================
++--------------+-----------------+------------------+--------------------+-------------------+---------------------------------+
+| athlete_id   |   fatigue_index |   recovery_score | injury_indicator   | injury_severity   | rest_days                       |
++==============+=================+==================+====================+===================+=================================+
+| ATH0001      |           0.68  |           0.5972 | Yes                | mild              | 1 day                           |
++--------------+-----------------+------------------+--------------------+-------------------+---------------------------------+
+| ATH0002      |           0.773 |           0.7078 | No                 | mild              | 0 (active recovery recommended) |
++--------------+-----------------+------------------+--------------------+-------------------+---------------------------------+
+| ATH0003      |           0.317 |           0.6642 | No                 | mild              | 0 (active recovery recommended) |
++--------------+-----------------+------------------+--------------------+-------------------+---------------------------------+
+| ATH0004      |           0.758 |           0.5938 | No                 | mild              | 0 (active recovery recommended) |
++--------------+-----------------+------------------+--------------------+-------------------+---------------------------------+
+| ATH0005      |           0.674 |           0.1072 | No                 | moderate          | 0 (active recovery recommended) |
++--------------+-----------------+------------------+--------------------+-------------------+---------------------------------+
+| ATH0006      |           0.351 |           0.3086 | No                 | mild              | 0 (active recovery recommended) |
++--------------+-----------------+------------------+--------------------+-------------------+---------------------------------+
+| ATH0007      |           1.843 |           0.1741 | No                 | severe            | 0 (active recovery recommended) |
++--------------+-----------------+------------------+--------------------+-------------------+---------------------------------+
+| ATH0008      |           0.348 |           0.529  | No                 | moderate          | 0 (active recovery recommended) |
++--------------+-----------------+------------------+--------------------+-------------------+---------------------------------+
+| ATH0009      |           1.265 |           0.4085 | No                 | moderate          | 0 (active recovery recommended) |
++--------------+-----------------+------------------+--------------------+-------------------+---------------------------------+
+| ATH0010      |           1.218 |           0.4268 | No                 | moderate          | 0 (active recovery recommended) |
++--------------+-----------------+------------------+--------------------+-------------------+---------------------------------+
+| ATH0011      |           4.638 |           0.0485 | Yes                | severe            | 5ΓÇô7 days                        |
++--------------+-----------------+------------------+--------------------+-------------------+---------------------------------+
+| ATH0012      |           1.366 |           0.0788 | Yes                | moderate          | 2ΓÇô3 days                        |
++--------------+-----------------+------------------+--------------------+-------------------+---------------------------------+
+| ATH0013      |           0.408 |           0.5651 | No                 | moderate          | 0 (active recovery recommended) |
++--------------+-----------------+------------------+--------------------+-------------------+---------------------------------+
+| ATH0014      |           0.985 |           0.1312 | Yes                | moderate          | 2ΓÇô3 days                        |
++--------------+-----------------+------------------+--------------------+-------------------+---------------------------------+
+| ATH0015      |           3.434 |           0.1327 | Yes                | severe            | 5ΓÇô7 days                        |
++--------------+-----------------+------------------+--------------------+-------------------+---------------------------------+
+
+============================================================
+  RECOMMENDATION STATISTICS
+============================================================
+  Total athletes    : 500
+  Predicted injured : 102 (20.4%)
+  Severity breakdown:
+    moderate      197 ( 39.4%)  ###############
+    mild          189 ( 37.8%)  ###############
+    severe        114 ( 22.8%)  #########
+
+============================================================
+  SAVED MODEL VERIFICATION
+============================================================
+  [OK] injury_model.pkl               (2517.4 KB)
+  [OK] severity_model.pkl             (1165.2 KB)
+
+============================================================
+  [DONE] Pipeline complete in 11.61 seconds
+============================================================
+

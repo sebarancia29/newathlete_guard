@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Secrets — NEVER commit these
+credentials.json
+client_secret*.json
+token.json
+*.token
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary / scratch scripts created during development
+_fix_*.py
+_patch_*.py
+_p.py
+_p2.py
+_p3.py
+_p4.py
+_p5.py
+
+# Log / output files
+err.txt
+output.txt
+output2.txt
+*.log
+
+# Streamlit cache
+.streamlit/secrets.toml
+
+# Athlete records CSV (user-generated runtime data, not source code)
+data/athlete_records.csv
