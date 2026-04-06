@@ -965,7 +965,7 @@ def page_records():
 
     styled = (df_filtered[display_cols]
               .style
-              .applymap(_color_risk, subset=["risk_level"])
+              .map(_color_risk, subset=["risk_level"])
               .format({"injury_probability": "{:.1f}%",
                        "fatigue_score": "{:.1f}"}))
     st.dataframe(styled, use_container_width=True, height=320)
