@@ -324,11 +324,13 @@ def sidebar():
         st.markdown("## AthleteGuard AI")
         st.markdown("*Injury Prediction & Recovery*")
         st.markdown("---")
-        page = st.radio(
-            "Navigate",
-            ["Home", "Predict", "Athlete Records", "Data Explorer", "Model Performance"],
-            label_visibility="collapsed",
-        )
+        role = st.session_state.get("role", "athlete")
+        if role == "coach":
+            pages = ["Live Dashboard", "Predict", "Home", "Athlete Records", "Data Explorer", "Model Performance"]
+        else:
+            pages = ["Live Dashboard", "Predict", "My Records"]
+
+        page = st.radio("Navigate", pages, label_visibility="collapsed")
         st.markdown("---")
         st.markdown("**Models**")
         models_dir = os.path.join(ROOT, "models")
@@ -340,6 +342,12 @@ def sidebar():
                 st.warning(f"{label} (training pending)")
         st.markdown("---")
         st.caption("© 2025 AthleteGuard AI | ML Powered")
+        
+        if st.button("🚪 Logout", use_container_width=True):
+            st.session_state["logged_in"] = False
+            st.session_state.pop("username", None)
+            st.rerun()
+            
     return page
 
 
@@ -876,6 +884,9 @@ def page_records():
         return
 
     df_r = pd.read_csv(RECORDS_PATH)
+    if st.session_state.get("role") == "athlete":
+        df_r = df_r[df_r["name"].str.lower() == st.session_state.get("username", "")]
+        
     if df_r.empty:
         st.info("No records found.")
         return
@@ -1187,12 +1198,232 @@ def page_model_performance():
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# PAGE 5 — LIVE DASHBOARD
+# ═══════════════════════════════════════════════════════════════════════════════
+import time
+import random
+
+def page_live_dashboard(inj_model, inj_feats):
+    from injury_prediction_model import predict_single as inj_predict
+    
+    st.markdown("# 🚀 Live Performance Dashboard")
+    st.markdown("Real-time monitoring of athlete telemetry, risk scores, and performance trends.")
+    st.markdown("---")
+    
+    # ── Role Selection ─────────────
+    role = st.session_state.get("role", "athlete")
+    if role == "coach":
+        athlete_opts = ["alex", "jordan", "casey", "riley", "taylor", "sam"]
+        selected_athlete = st.selectbox("🎯 Select Athlete to Monitor", athlete_opts, index=0)
+    else:
+        selected_athlete = st.session_state.get("username", "alex")
+        st.markdown(f"**Welcome back, {selected_athlete.title()}!** Here is your personal dashboard.")
+
+    # Load from CSV
+    try:
+        df_hist = pd.read_csv(RECORDS_PATH)
+        df_hist = df_hist[df_hist["name"].str.lower() == selected_athlete.lower()].tail(7)
+        if df_hist.empty:
+            raise ValueError
+        days = df_hist["timestamp"].apply(lambda x: x.split(" ")[0][-5:]).tolist()  # MM-DD
+        workload = df_hist["workload_index"].tolist()
+        fatigue = df_hist["fatigue_score"].tolist()
+        sleep = df_hist["sleep_duration"].tolist()
+        recovery = df_hist["recovery_score"].tolist()
+    except:
+        days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        workload = [5.2, 5.8, 6.4, 4.5, 7.1, 7.8, 3.5]
+        fatigue = [3.0, 3.5, 4.2, 3.8, 5.0, 6.5, 2.5]
+        sleep = [7.5, 7.0, 6.5, 8.0, 7.2, 6.0, 8.5]
+        recovery = [80, 75, 68, 85, 78, 60, 90]
+
+    st.markdown("### 📊 Weekly Performance & Recovery Trends")
+    st.markdown("Aggregated historical data over the last few days.")
+    trend_col1, trend_col2 = st.columns(2)
+    
+    with trend_col1:
+        df_trends = pd.DataFrame({"Day": days, "Workload": workload, "Fatigue": fatigue})
+        
+        fig_trend = go.Figure()
+        fig_trend.add_trace(go.Scatter(x=df_trends["Day"], y=df_trends["Workload"], mode='lines+markers', name='Workload', line=dict(color='#58a6ff')))
+        fig_trend.add_trace(go.Bar(x=df_trends["Day"], y=df_trends["Fatigue"], name='Fatigue', marker_color='#e3b341', opacity=0.6))
+        fig_trend.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+            font_color="#e6edf3", margin=dict(l=0, r=0, t=10, b=0),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            height=250
+        )
+        st.plotly_chart(fig_trend, use_container_width=True)
+        
+    with trend_col2:
+        df_sleep = pd.DataFrame({"Day": days, "Sleep (hrs)": sleep, "Recovery Score": recovery})
+        
+        fig_sleep = make_subplots(specs=[[{"secondary_y": True}]])
+        fig_sleep.add_trace(go.Bar(x=df_sleep["Day"], y=df_sleep["Sleep (hrs)"], name='Sleep (hrs)', marker_color='#8b949e'), secondary_y=False)
+        fig_sleep.add_trace(go.Scatter(x=df_sleep["Day"], y=df_sleep["Recovery Score"], mode='lines+markers', name='Recovery Score', line=dict(color='#56d364')), secondary_y=True)
+        fig_sleep.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+            font_color="#e6edf3", margin=dict(l=0, r=0, t=10, b=0),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            height=250
+        )
+        fig_sleep.update_yaxes(title_text="Sleep", secondary_y=False)
+        fig_sleep.update_yaxes(title_text="Recovery", secondary_y=True, range=[0, 100])
+        st.plotly_chart(fig_sleep, use_container_width=True)
+    
+    st.markdown("---")
+    st.markdown("### 🔴 REAL-TIME SYSTEMS")
+    
+    # ── Live Telemetry Simulator ─────────────
+    # We initialize session state for live values if not exists
+    if "live_hr" not in st.session_state:
+        st.session_state.live_hr = 70
+        st.session_state.live_fatigue = 4.0
+        st.session_state.live_workload = 5.0
+        st.session_state.sim_active = False
+
+    def toggle_sim():
+        st.session_state.sim_active = not st.session_state.sim_active
+
+    st.button("Toggle WebSocket Stream Simulator", on_click=toggle_sim)
+    
+    # Placeholders for live updates
+    metric_cols = st.columns(4)
+    m_hr = metric_cols[0].empty()
+    m_fat = metric_cols[1].empty()
+    m_work = metric_cols[2].empty()
+    m_risk = metric_cols[3].empty()
+    
+    alert_placeholder = st.empty()
+    
+    # Base athlete dict to feed into model
+    input_dict = {
+        "age": 24, "gender": 1, "position": 3, "previous_injury": 0,
+        "training_intensity": 2, "match_frequency": 4, "training_hours": 15.0,
+        "recovery_time": 2.0, "activity_level": 2, "sleep_duration": 7.0,
+        "steps_per_day": 8000, "calories_burned": 2500, "hydration_level": 2.5,
+        "recovery_score": 0.5, "risk_score": 0.0, "workload_index": 0.0, "fatigue_index": 0.0
+    }
+    
+    if st.session_state.sim_active:
+        # Streamlit while loop for real-time simulation
+        # It runs continuously updating placeholders
+        for _ in range(50):
+            if not st.session_state.sim_active:
+                break
+                
+            # Random walk for telemetry
+            st.session_state.live_hr += random.randint(-3, 4)
+            st.session_state.live_hr = max(60, min(180, st.session_state.live_hr))
+            
+            st.session_state.live_fatigue += random.uniform(-0.1, 0.2)
+            st.session_state.live_fatigue = max(1.0, min(10.0, st.session_state.live_fatigue))
+            
+            st.session_state.live_workload += random.uniform(-0.2, 0.3)
+            st.session_state.live_workload = max(1.0, min(15.0, st.session_state.live_workload))
+            
+            input_dict["heart_rate"] = st.session_state.live_hr
+            input_dict["fatigue_score"] = st.session_state.live_fatigue
+            input_dict["workload_index"] = st.session_state.live_workload
+            
+            # Predict
+            pred, proba = inj_predict(input_dict, inj_model, inj_feats)
+            risk_pct = proba * 100
+            
+            # Risk Level
+            if risk_pct > 70:
+                risk_color = "#ff7b72"
+                risk_label = "HIGH RISK"
+            elif risk_pct > 40:
+                risk_color = "#e3b341"
+                risk_label = "MEDIUM RISK"
+            else:
+                risk_color = "#56d364"
+                risk_label = "LOW RISK"
+                
+            # Update metrics
+            m_hr.metric("Live Heart Rate", f"{st.session_state.live_hr} BPM")
+            m_fat.metric("Live Fatigue", f"{st.session_state.live_fatigue:.1f}/10")
+            m_work.metric("Live Workload", f"{st.session_state.live_workload:.1f}")
+            
+            # Custom styled metric for Risk
+            m_risk.markdown(f'''
+                <div data-testid="metric-container" style="border-color:{risk_color};">
+                <label>AI Injury Risk</label>
+                <div data-testid="metric-value" style="color:{risk_color}!important;">{risk_pct:.1f}%</div>
+                <div style="font-size:0.8rem;color:{risk_color};font-weight:bold;">{risk_label}</div>
+                </div>
+            ''', unsafe_allow_html=True)
+            
+            # Alert Logic
+            if risk_pct > 70:
+                alert_placeholder.error("🚨 **EMERGENCY TRIGGERED (Push Alert):** Injury risk critical. **SMART RECOMMENDATION: Stop training immediately!**")
+            elif risk_pct > 40:
+                alert_placeholder.warning("⚠️ **SMART RECOMMENDATION:** Reduce intensity. Heart rate & fatigue indicate elevated risk.")
+            else:
+                alert_placeholder.success("✅ Athlete operating in safe optimal zone.", icon="ℹ️")
+                
+            time.sleep(1.5)
+            # st.rerun() at the end to keep it smooth if we used st.rerun instead of placeholders, 
+            # but placeholders are better to avoid flickering in the page.
+    else:
+        # Display static state when not running
+        m_hr.metric("Live Heart Rate", f"{st.session_state.live_hr} BPM")
+        m_fat.metric("Live Fatigue", f"{st.session_state.live_fatigue:.1f}/10")
+        m_work.metric("Live Workload", f"{st.session_state.live_workload:.1f}")
+        m_risk.metric("AI Injury Risk", "-- %")
+        alert_placeholder.info("Click 'Toggle WebSocket Stream Simulator' to begin live tracking.")
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LOGIN PORTAL
+# ═══════════════════════════════════════════════════════════════════════════════
+def page_login():
+    st.markdown("<br><br><br>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #58a6ff;'>AthleteGuard Portal</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #c9d1d9;'>Please sign in to access live dashboards and wearables.</p>", unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 1.5, 1])
+    with col2:
+        st.markdown('<div style="background:#161b22; padding:30px; border-radius:12px; border:1px solid #30363d;">', unsafe_allow_html=True)
+        with st.form("login_form"):
+            login_role = st.radio("Login As:", ["Athlete", "Coach"], horizontal=True)
+            username = st.text_input("Username / Athlete ID", placeholder="Enter your username")
+            password = st.text_input("Password", type="password", placeholder="Enter your password")
+            st.markdown("<br>", unsafe_allow_html=True)
+            submitted = st.form_submit_button("Sign In", use_container_width=True)
+            
+            if submitted:
+                if login_role == "Coach":
+                    if username.strip().lower() == "coach":
+                        st.session_state["logged_in"] = True
+                        st.session_state["role"] = "coach"
+                        st.session_state["username"] = "coach"
+                        st.rerun()
+                    else:
+                        st.error("Invalid coach credentials. Use username 'coach'.")
+                else:
+                    if username.strip().lower() in ["alex", "jordan", "casey", "riley", "taylor", "sam"]:
+                        st.session_state["logged_in"] = True
+                        st.session_state["role"] = "athlete"
+                        st.session_state["username"] = username.strip().lower()
+                        st.rerun()
+                    else:
+                        st.error("Invalid athlete. Demo accounts: 'alex', 'jordan', 'casey', 'riley', 'taylor', 'sam'.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # MAIN
 # ═══════════════════════════════════════════════════════════════════════════════
 def main():
+    # Gate the entire app
+    if not st.session_state.get("logged_in", False):
+        page_login()
+        return
+
     page = sidebar()
 
-    if page == "Athlete Records":
+    if page in ["Athlete Records", "My Records"]:
         # Records page does not need the ML models loaded
         page_records()
         return
@@ -1201,6 +1432,8 @@ def main():
 
     if page == "Home":
         page_home(df)
+    elif page == "Live Dashboard":
+        page_live_dashboard(inj_model, inj_feats)
     elif page == "Predict":
         page_predict(inj_model, inj_feats, sev_model, sev_feats)
     elif page == "Data Explorer":
